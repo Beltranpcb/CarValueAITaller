@@ -3,13 +3,30 @@ import base64
 import json
 import os
 import re
+import cohere
 from .config import ESTADOS
 
 MODELO_VISION = "command-a-vision-07-2025"
 # TODO C1-A (autoría propia): diseñad y escribid el prompt del modelo visual.
 # El texto NO se proporciona. Revisad GUIA_ALUMNADO.md, etapa 5.
 # Debe describir tarea, reglas, 4 estados, unknown y formato de respuesta.
-PROMPT = ""  # RELLENAR. No vale copiar el prompt de otro equipo.
+PROMPT = """Eres un tasador de coches de segunda mano, analiza la fotografía adjunta y evalúa solo el aspecto exterior visible del coche (carrocería, pintura, abolladuras, arañazos, óxido, cristales, llantas y neumáticos).
+
+Elige UNA sola etiqueta de esta lista, escrita exactamente así:
+- "like new": aspecto de coche nuevo, sin marcas ni desgaste visibles.
+- "excellent": muy buen estado, con desgaste mínimo apenas perceptible.
+- "good": buen estado general, con marcas pequeñas de uso (arañazos leves, pequeños roces).
+- "fair": estado aceptable, con daños o desgaste claramente visibles (abolladuras, óxido, pintura deteriorada).
+
+Si en la imagen no se aprecia claramente un coche, o no se ve suficientemente bien como para valorar su exterior (por ejemplo, solo se ve una rueda o una imagen borrosa u oscura), responde "unknown", no trates de adivinar.
+
+Reglas que debes de seguir:
+1. No deduzcas nada que no se vea: no puedes opinar sobre el motor, el kilometraje, el historial de accidentes, averías o el funcionamiento mecánico. No puedes dar ideas vagas que no se puedan confirmar visualmente.
+2. Basa la justificación solo en detalles visibles en la foto.
+
+Formato de respuesta: devuelve solo un objeto JSON válido, sin texto antes ni después y sin bloques de Markdown, con exactamente estas dos claves:
+{"condition": "<una de: like new, excellent, good, fair, unknown>", "reason": "<explicación breve en español, máximo dos frases>"}
+No añadas más campos ni puntuaciones de confianza."""
 
 
 class VisionError(Exception):
@@ -35,7 +52,7 @@ def parsear_respuesta(texto: str) -> tuple[str, str]:
 
 
 def clasificar_estado(contenido: bytes, mimetype: str) -> tuple[str, str, str]:
-    """TODO C1: devuelve (condition, reason, fuente)."""
+    """Devuelve (condition, reason, fuente)."""
     if os.getenv("VISION_MOCK", "0") == "1":
         return "good", "Modo demostración: estado fijo, sin analizar la fotografía.", "MOCK"
     token = os.getenv("COHERE_API_KEY", "").strip()
@@ -43,7 +60,34 @@ def clasificar_estado(contenido: bytes, mimetype: str) -> tuple[str, str, str]:
         raise VisionError("Falta COHERE_API_KEY en el archivo .env")
     if not PROMPT.strip():
         raise VisionError("Falta redactar el prompt visual: tarea C1-A.")
-    # TODO C1-B: convierte contenido en data URL base64 (mimetype dinamico).
-    # TODO C1-B: cliente = cohere.ClientV2(api_key=token); cliente.chat(...).
-    # TODO C1-B: recoge texto; parsear_respuesta(texto); devuelve estado, razon, "COHERE".
-    raise NotImplementedError("Completa la llamada real a Cohere Vision")
+
+    # Foto -> data URL en base64, usando el MIME real de la imagen
+    data_url = f"data:{mimetype};base64," + base64.b64encode(contenido).decode("utf-8")
+
+    # Llamada a Cohere: cualquier fallo de red, clave o límite se convierte en VisionError
+    try:
+        cliente = cohere.ClientV2(api_key=token)
+        respuesta = cliente.chat(
+            model=MODELO_VISION,
+            temperature=0,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": PROMPT},
+                    {"type": "image_url", "image_url": {"url": data_url}},
+                ],
+            }],
+        )
+    except Exception as exc:
+        raise VisionError(f"No se pudo consultar Cohere: {exc}") from exc
+
+    # Recoger el texto de la respuesta
+    texto = "".join(
+        getattr(bloque, "text", "") or "" for bloque in (respuesta.message.content or [])
+    )
+    if not texto.strip():
+        raise VisionError("Cohere devolvió una respuesta vacía.")
+
+    # parsear_respuesta queda fuera del try para no tapar su propio VisionError
+    estado, razon = parsear_respuesta(texto)
+    return estado, razon, "COHERE"
