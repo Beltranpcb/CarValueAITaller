@@ -3,7 +3,7 @@ WORKDIR /code
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 COPY requirements.txt .
 # TODO A3: instala las dependencias Python durante la build
-# RUN ...
+pip install requirements.txt
 COPY app/ ./app/
 COPY templates/ ./templates/
 COPY models/ ./models/
