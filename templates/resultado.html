@@ -1,12 +1,21 @@
 {% extends "base.html" %}
 {% block contenido %}
 <section class="card">
+
   <h2>Resultado de la tasación</h2>
-  {# TODO C3: DISEÑAD EL BLOQUE DE RESULTADOS (HTML + Jinja2).
-     Deben aparecer: id, marca y año, precio orientativo USD, estado externo,
-     motivo corto y origen de la clasificación: MOCK o COHERE.
-     Incluir enlace a / para volver a tasar.
-     Las variables disponibles están en docs/CONTRATO_COMPONENTES.md.
-  #}
+  <h2>Nº de la Tasación {{ identificador }}</h2>
+
+  <p><strong>Coche:</strong> {{ datos.manufacturer }} ({{ datos.year }})</p>
+
+  <p><strong>Precio estimado:</strong> {{ "{:,.0f}".format(precio) }} USD</p>
+
+  <p><strong>Estado exterior:</strong> {{ estado }}</p>
+
+  <p><strong>Justificación:</strong> {{ razon }}</p>
+
+  <p class="hint">Fuente del análisis de la foto: {{ fuente }}</p>
+
+  <p><a href="/">Hacer otra tasación</a></p>
+
 </section>
 {% endblock %}
