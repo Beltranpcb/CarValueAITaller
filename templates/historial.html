@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block contenido %}
+<section class="card"><h2>Últimas tasaciones</h2>
+{% if filas %}
+<div style="overflow-x:auto"><table><thead><tr><th>#</th><th>Marca</th><th>Año</th><th>Estado</th><th>Precio</th><th>Fuente</th></tr></thead>
+<tbody>{% for f in filas %}<tr>
+<td>{{ f.id }}</td><td>{{ f.manufacturer|title }}</td><td>{{ f.year }}</td>
+<td>{{ f.condition }}</td><td>{{ '${:,.0f}'.format(f.price_prediction) }}</td><td>{{ f.vision_source }}</td>
+</tr>{% endfor %}</tbody></table></div>
+{% else %}<p>Todavía no hay tasaciones.</p>{% endif %}
+</section>
+{% endblock %}

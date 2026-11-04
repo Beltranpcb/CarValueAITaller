@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: carvalue
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-carvalue_local_only}
+      POSTGRES_DB: carvalue
+    volumes:
+      - postgres_datos:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U carvalue -d carvalue"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://carvalue:${POSTGRES_PASSWORD:-carvalue_local_only}@db:5432/carvalue
+      # TODO A1: anade COHERE_API_KEY y VISION_MOCK leyendo .env
+      # COHERE_API_KEY: ...
+      # VISION_MOCK: ...
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./app:/code/app:ro
+      - ./templates:/code/templates:ro
+
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile.jupyter
+    ports:
+      - "8888:8888"
+    environment:
+      # TODO A2: configura JUPYTER_TOKEN desde .env
+      # JUPYTER_TOKEN: ...
+      DATABASE_URL: postgresql+psycopg://carvalue:${POSTGRES_PASSWORD:-carvalue_local_only}@db:5432/carvalue
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./data:/home/jovyan/work/data:ro
+      - ./notebooks:/home/jovyan/work/notebooks
+
+volumes:
+  postgres_datos:

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block contenido %}
+<section class="card">
+  <h2>Estimar el precio de un coche usado</h2>
+  <p>Indica sus características y adjunta una fotografía exterior para estimar su estado.</p>
+  {% if error %}<p class="alert">{{ error }}</p>{% endif %}
+
+  {# TODO C2: ESCRIBID VOSOTROS EL FORMULARIO HTML COMPLETO.
+     No hay formulario de ejemplo resuelto en este archivo.
+     Consultad GUIA_ALUMNADO.md, etapa 4, y docs/CONTRATO_COMPONENTES.md.
+     Requisitos: POST /tasar, multipart, seis campos, foto, botón enviar.
+     Los select se rellenan a partir de opciones.marcas/combustibles/tipos/transmisiones.
+     Las categorías de estado NO son seleccionables por el usuario.
+  #}
+
+</section>
+{% endblock %}
