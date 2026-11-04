@@ -1,5 +1,5 @@
 FROM quay.io/jupyter/base-notebook:82d322f00937
 COPY --chown=${NB_UID}:${NB_GID} requirements_jupyter.txt /tmp/requirements_jupyter.txt
 # TODO A4: instala las dependencias del notebook (SQLAlchemy, psycopg, pandas)
-# RUN ...
+RUN pip install --no-cache-dir -r /tmp/requirements_jupyter.txt
 WORKDIR /home/jovyan/work

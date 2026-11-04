@@ -22,8 +22,8 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://carvalue:${POSTGRES_PASSWORD:-carvalue_local_only}@db:5432/carvalue
       # TODO A1: anade COHERE_API_KEY y VISION_MOCK leyendo .env
-      # COHERE_API_KEY: ...
-      # VISION_MOCK: ...
+      COHERE_API_KEY: ${COHERE_API_KEY}
+      VISION_MOCK: ${VISION_MOCK:-0}
     depends_on:
       db:
         condition: service_healthy
@@ -39,7 +39,7 @@ services:
       - "8888:8888"
     environment:
       # TODO A2: configura JUPYTER_TOKEN desde .env
-      # JUPYTER_TOKEN: ...
+      JUPYTER_TOKEN: carvalue123
       DATABASE_URL: postgresql+psycopg://carvalue:${POSTGRES_PASSWORD:-carvalue_local_only}@db:5432/carvalue
     depends_on:
       db:
