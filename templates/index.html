@@ -5,13 +5,48 @@
   <p>Indica sus características y adjunta una fotografía exterior para estimar su estado.</p>
   {% if error %}<p class="alert">{{ error }}</p>{% endif %}
 
-  {# TODO C2: ESCRIBID VOSOTROS EL FORMULARIO HTML COMPLETO.
-     No hay formulario de ejemplo resuelto en este archivo.
-     Consultad GUIA_ALUMNADO.md, etapa 4, y docs/CONTRATO_COMPONENTES.md.
-     Requisitos: POST /tasar, multipart, seis campos, foto, botón enviar.
-     Los select se rellenan a partir de opciones.marcas/combustibles/tipos/transmisiones.
-     Las categorías de estado NO son seleccionables por el usuario.
-  #}
+  <form action="/tasar" method="post" enctype="multipart/form-data">
+
+  <label for="manufacturer">Marca</label>
+  <select id="manufacturer" name="manufacturer" required>
+    {% for marca in opciones.marcas %}
+      <option value="{{ marca }}">{{ marca }}</option>
+    {% endfor %}
+  </select>
+
+  <label for="year">Año</label>
+  <input type="number" id="year" name="year" min="1995" max="2021" required>
+
+  <label for="odometer">Kilometraje (en millas)</label>
+  <input type="number" id="odometer" name="odometer" min="1000" max="250000" required>
+
+  <label for="fuel">Combustible</label>
+  <select id="fuel" name="fuel" required>
+    {% for combustible in opciones.combustibles %}
+      <option value="{{ combustible }}">{{ combustible }}</option>
+    {% endfor %}
+  </select>
+
+  <label for="type">Carrocería</label>
+  <select id="type" name="type" required>
+    {% for tipo in opciones.tipos %}
+      <option value="{{ tipo }}">{{ tipo }}</option>
+    {% endfor %}
+  </select>
+
+  <label for="transmission">Transmisión</label>
+  <select id="transmission" name="transmission" required>
+    {% for transmision in opciones.transmisiones %}
+      <option value="{{ transmision }}">{{ transmision }}</option>
+    {% endfor %}
+  </select>
+
+  <label for="foto">Fotografía exterior (JPG, PNG o WEBP)</label>
+  <input type="file" id="foto" name="foto" accept="image/jpeg,image/png,image/webp" required>
+
+  <button type="submit">Tasar</button>
+
+</form>
 
 </section>
 {% endblock %}
